@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Mapa Tiempo Real - Lukas</title>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+}
+
+#map {
+  height: 100vh;
+  width: 100%;
+}
+
+#info {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 18px 22px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  font-size: 14px;
+  color: white;
+  min-width: 220px;
+}
+
+#info h2 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#info div {
+  margin-bottom: 6px;
+}
+
+#info b {
+  color: #ffd369;
+}
+
+.footer {
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  color: white;
+  font-size: 13px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="info">
+  <h2>Seguimiento en Vivo</h2>
+  <div><b>Estudiante:</b> Lukas</div>
+  <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.3); margin: 10px 0;">
+  <div><b>Usuario:</b> <span id="usuario">-</span></div>
+  <div><b>Lat:</b> <span id="latitud">-</span></div>
+  <div><b>Lng:</b> <span id="longitud">-</span></div>
+  <div><b>Hora:</b> <span id="hora">-</span></div>
+</div>
+
+<div class="footer">
+  © 2026 Lukas - Mapa en Tiempo Real
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCakNak9rjURm04sBnKps2D_YbDGdChle8",
+  authDomain: "mapatiemporealseguro.firebaseapp.com",
+  databaseURL: "https://mapatiemporealseguro-default-rtdb.firebaseio.com",
+  projectId: "mapatiemporealseguro",
+  storageBucket: "mapatiemporealseguro.firebasestorage.app",
+  messagingSenderId: "126351296804",
+  appId: "1:126351296804:web:52d0c90fc30c1f7c240bb1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+mapboxgl.accessToken = "pk.eyJ1IjoiZGF2aWRhY2NtYXAiLCJhIjoiY21tNWVpazg2MDV4NjJ3b20xZGU1c3h6MCJ9.UObKki7mOwbZvUTvv7r7pQ";
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/dark-v11',
+  center: [-68.1198, -16.5034],
+  zoom: 16
+});
+
+const marker = new mapboxgl.Marker({ color: "#ffd369" })
+  .setLngLat([-68.1198, -16.5034])
+  .addTo(map);
+
+signInAnonymously(auth).then(() => {
+
+  const ubicacionesRef = ref(db, "ubicaciones");
+
+  onValue(ubicacionesRef, (snapshot) => {
+
+    const data = snapshot.val();
+
+    if (data) {
+
+      const uid = Object.keys(data)[0];
+      const info = data[uid];
+
+      const lat = info.latitud;
+      const lng = info.longitud;
+      const hora = new Date(info.hora).toLocaleString();
+
+      marker.setLngLat([lng, lat]);
+      map.flyTo({ center: [lng, lat], speed: 1.2 });
+
+      document.getElementById("usuario").innerText = uid;
+      document.getElementById("latitud").innerText = lat.toFixed(6);
+      document.getElementById("longitud").innerText = lng.toFixed(6);
+      document.getElementById("hora").innerText = hora;
+
+    }
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
