@@ -83,36 +83,39 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// 🔹 Aquí van tus credenciales de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCakNak9rjURm04sBnKps2D_YbDGdChle8",
-  authDomain: "mapatiemporealseguro.firebaseapp.com",
-  databaseURL: "https://mapatiemporealseguro-default-rtdb.firebaseio.com",
-  projectId: "mapatiemporealseguro",
-  storageBucket: "mapatiemporealseguro.firebasestorage.app",
-  messagingSenderId: "126351296804",
-  appId: "1:126351296804:web:52d0c90fc30c1f7c240bb1"
+  apiKey: "AIzaSyCQEdhpOoyczHdlzHKFKEtmsjcOyxP1LfQ",
+  authDomain: "mapboxtracker-5b25f.firebaseapp.com",
+  databaseURL: "https://mapboxtracker-5b25f-default-rtdb.firebaseio.com",
+  projectId: "mapboxtracker-5b25f",
+  storageBucket: "mapboxtracker-5b25f.firebasestorage.app",
+  messagingSenderId: "151602162192",
+  appId: "1:151602162192:android:0036e1d23019a7f6c9f895"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-mapboxgl.accessToken = "pk.eyJ1IjoiZGF2aWRhY2NtYXAiLCJhIjoiY21tNWVpazg2MDV4NjJ3b20xZGU1c3h6MCJ9.UObKki7mOwbZvUTvv7r7pQ";
+// 🔹 Token de Mapbox
+mapboxgl.accessToken = "pk.eyJ1Ijoic2Fzc2FuMzIyIiwiYSI6ImNtbWI3am8zbzBrMm4ycHB1NXdqdXZhNGYifQ.heISc4ptgVEbgPPetUGf1Q";
 
 const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/dark-v11',
-  center: [-68.1198, -16.5034],
+  center: [-68.15, -16.5], // Cambia a tu ubicación inicial
   zoom: 16
 });
 
 const marker = new mapboxgl.Marker({ color: "#ffd369" })
-  .setLngLat([-68.1198, -16.5034])
+  .setLngLat([-68.15, -16.5])
   .addTo(map);
 
+// 🔹 Conexión Firebase anónima
 signInAnonymously(auth).then(() => {
 
-  const ubicacionesRef = ref(db, "ubicaciones");
+  const ubicacionesRef = ref(db, "usuario1/historial");
 
   onValue(ubicacionesRef, (snapshot) => {
 
@@ -120,17 +123,19 @@ signInAnonymously(auth).then(() => {
 
     if (data) {
 
-      const uid = Object.keys(data)[0];
-      const info = data[uid];
+      // Tomamos el último registro
+      const keys = Object.keys(data);
+      const lastKey = keys[keys.length - 1];
+      const info = data[lastKey];
 
       const lat = info.latitud;
       const lng = info.longitud;
-      const hora = new Date(info.hora).toLocaleString();
+      const hora = new Date(info.timestamp).toLocaleString();
 
       marker.setLngLat([lng, lat]);
       map.flyTo({ center: [lng, lat], speed: 1.2 });
 
-      document.getElementById("usuario").innerText = uid;
+      document.getElementById("usuario").innerText = "usuario1";
       document.getElementById("latitud").innerText = lat.toFixed(6);
       document.getElementById("longitud").innerText = lng.toFixed(6);
       document.getElementById("hora").innerText = hora;
